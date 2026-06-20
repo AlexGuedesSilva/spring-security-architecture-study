@@ -1,20 +1,74 @@
-# Spring Security Architecture Study
+# Spring Security Architecture Study (JWT + Custom Authentication Flow)
 
-Projeto educacional criado para demonstrar o funcionamento interno do Spring Security de forma prática e visual.
+This project is a hands-on study of Spring Security internals, focusing on how authentication and authorization work under the hood.
+It demonstrates the evolution from default security configuration to a fully custom JWT-based authentication system.
 
-## Objetivo
+## 🚀 Project Goals
 
-O objetivo deste projeto é explicar como o Spring Security processa uma autenticação internamente, desde a chegada da requisição até o armazenamento do usuário autenticado no SecurityContext.
-
-Muitos desenvolvedores utilizam o framework apenas por configuração, sem compreender os componentes responsáveis pela autenticação e autorização.
-
-Este repositório busca preencher essa lacuna.
+* Understand Spring Security filter chain
+* Implement custom authentication logic
+* Replace default authentication with JWT
+* Explore AuthenticationProvider strategy pattern
+* Learn how SecurityContextHolder manages authenticated users
+* Visualize the complete authentication flow using logs
 
 ---
 
-## Fluxo da Autenticação
+## 🧠 What This Project Covers
 
-Request
+### 1. Spring Security Basics
+   * Default Spring Security configuration
+   * Automatic authentication setup
+   * Introduction to SecurityFilterChain
+
+---
+
+### 2. Custom Security Configuration
+   * Manual SecurityFilterChain configuration
+   * Endpoint authorization rules
+   * Public vs protected routes
+   * HTTP Basic authentication
+
+---
+
+### 3. Authentication Architecture
+   * Custom UserDetailsService
+   * In-memory authentication
+   * Password encryption using BCryptPasswordEncoder
+
+---
+
+### 4. Custom Authentication Provider
+   * Implementation of AuthenticationProvider
+   * Strategy Pattern in Spring Security:
+      * DaoAuthenticationProvider
+      * JwtAuthenticationProvider
+      * CustomAuthenticationProvider
+
+---
+
+### 5. Security Context Understanding
+   * How Spring stores authenticated users
+   * SecurityContextHolder usage
+   * ThreadLocal-based request authentication
+   * /me endpoint to expose current user
+
+---
+
+### 6. JWT Authentication (Stateless Security)
+   * JWT token generation and validation
+   * JwtService implementation
+   * JwtAuthenticationFilter using OncePerRequestFilter
+   * Stateless authentication replacing HTTP sessions
+   * Bearer token-based requests
+
+---
+
+### 7. Security Flow Logging (Observability)
+   * Added logs to trace authentication pipeline
+   * Visual understanding of Spring Security execution flow:
+
+Request Received
 ↓
 Security Filter Chain
 ↓
@@ -24,9 +78,37 @@ AuthenticationProvider
 ↓
 UserDetailsService
 ↓
+PasswordEncoder
+↓
+Authentication Success
+↓
 SecurityContextHolder
 ↓
-Authenticated User
+Controller
+
+---
+
+## 🔐 Authentication Flow (JWT)
+
+POST /login
+↓
+AuthenticationManager
+↓
+AuthenticationProvider
+↓
+JWT Generated (JwtService)
+↓
+Client receives token
+
+Request /api/**
+↓
+Authorization: Bearer <token>
+↓
+JwtAuthenticationFilter
+↓
+SecurityContextHolder
+↓
+Controller
 
 ---
 
@@ -43,74 +125,75 @@ Authenticated User
 
 ---
 
-## Assuntos Demonstrados
+## 📌 Concepts Demonstrated
 
 ### Security Filter Chain
 
-Responsável por interceptar todas as requisições HTTP e aplicar os filtros de segurança configurados.
+RResponsible for intercepting all HTTP requests and applying configured security filters.
 
 ### AuthenticationManager
 
-Coordena o processo de autenticação delegando para um AuthenticationProvider compatível.
+Coordinates the authentication process by delegating to a compatible AuthenticationProvider.
 
 ### AuthenticationProvider
 
-Executa a validação das credenciais recebidas.
+Performs credential validation.
 
-Exemplo:
+Examples:
 
-* Username e senha
-* JWT
+* Username and password
+* JWT tokens
 * OAuth2
 * API Keys
 
 ### UserDetailsService
 
-Responsável por carregar os dados do usuário.
+Responsible for loading user data.
 
-Exemplo:
+Examples:
 
-* Banco de dados
+* Database
 * LDAP
-* API externa
+* External API
 
 ### SecurityContextHolder
 
-Armazena a autenticação atual da requisição.
+Stores the current authentication for the request.
 
-Permite acessar:
+It allows access to:
 
-* Usuário autenticado
+* Authentication user
 * Roles
 * Authorities
 * Claims
 
 ---
 
-## Funcionalidades do Projeto
+## ⚙️ Project Features
 
-* Login com usuário e senha
-* Autenticação JWT
-* Endpoints protegidos
-* Roles e Authorities
-* Testes de integração
-* Logs demonstrando cada etapa do fluxo
-* Diagramas explicativos
-
----
-
-## O que você aprenderá
-
-Ao finalizar este projeto você será capaz de:
-
-* Entender a arquitetura interna do Spring Security
-* Implementar autenticação baseada em JWT
-* Customizar filtros de segurança
-* Criar AuthenticationProviders personalizados
-* Trabalhar com UserDetailsService
-* Compreender OAuth2 Resource Server
-* Depurar problemas de autenticação com mais facilidade
+* Login with username and password
+* JWT authentication
+* Protected endpoints
+* Roles and authorities
+* Integration tests
+* Logs demonstrating each step of the security flow
+* Explanatory diagrams
 
 ---
 
-Projeto criado para fins educacionais e portfólio.
+## 🧠 Key Learnings
+
+* Spring Security is based on a filter chain architecture
+* Authentication is handled via AuthenticationManager + Providers
+* AuthenticationProvider follows the Strategy Pattern
+* SecurityContextHolder stores authentication per request (ThreadLocal)
+* JWT enables stateless authentication
+* Filters are the core mechanism behind request security
+
+---
+
+## 👨‍💻 Author
+
+Alex Guedes
+
+Study project focused on mastering Spring Security architecture and JWT-based authentication flows.
