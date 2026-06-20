@@ -1,4 +1,4 @@
-package com.alexguedes.spring_security_architecture_study.security;
+package com.alexguedes.spring_security_architecture_study.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
