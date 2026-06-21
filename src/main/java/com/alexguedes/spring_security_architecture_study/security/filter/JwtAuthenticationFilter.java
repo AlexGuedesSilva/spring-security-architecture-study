@@ -1,5 +1,6 @@
-package com.alexguedes.spring_security_architecture_study.security.jwt;
+package com.alexguedes.spring_security_architecture_study.security.filter;
 
+import com.alexguedes.spring_security_architecture_study.security.service.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-
     private final UserDetailsService userDetailsService;
 
     public JwtAuthenticationFilter(
@@ -36,24 +36,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("Step 1 -> Filter Executed");
+        log.info("JWT Filter -> Request intercepted: {}", request.getRequestURI());
 
         String authHeader = request.getHeader("Authorization");
+        log.info("JWT Filter -> Authorization header: {}", authHeader);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.info("JWT Filter -> No Bearer token found, skipping authentication");
             filterChain.doFilter(request, response);
             return;
         }
 
         String token = authHeader.substring(7);
-        String username = jwtService.extractUsername(token);
+        log.info("JWT Filter -> Token received ({} chars)", token.length());
 
-        if (username != null &&
-                SecurityContextHolder.getContext().getAuthentication() == null) {
+        String username = jwtService.extractUsername(token);
+        log.info("JWT Filter -> Username extracted from token: {}", username);
+
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+            log.info("JWT Filter -> No existing authentication, validating token");
 
             UserDetails user = userDetailsService.loadUserByUsername(username);
+            log.info("JWT Filter -> User loaded: {}", user.getUsername());
 
             if (jwtService.isTokenValid(token, username)) {
+
+                log.info("JWT Filter -> Token valid, setting SecurityContext");
 
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(
@@ -63,10 +72,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                log.info("JWT Filter -> Authentication stored successfully for user: {}", username);
+
+            } else {
+                log.warn("JWT Filter -> Invalid token for user: {}", username);
             }
+        } else {
+            log.info("JWT Filter -> Authentication already exists or username is null");
         }
 
         filterChain.doFilter(request, response);
-        log.info("Step 2 -> Request Completed");
+
+        log.info("JWT Filter -> Request processing completed");
     }
 }

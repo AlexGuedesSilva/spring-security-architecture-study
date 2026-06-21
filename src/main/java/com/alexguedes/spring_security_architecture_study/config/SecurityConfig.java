@@ -1,5 +1,6 @@
 package com.alexguedes.spring_security_architecture_study.config;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -14,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+@Log4j2
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -21,6 +23,8 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http)
             throws Exception {
+
+        log.info("SecurityConfig -> Building SecurityFilterChain");
 
         return http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -41,11 +45,16 @@ public class SecurityConfig {
                         .roles("USER")
                         .build();
 
+        log.info("UserDetailsService -> InMemoryUserDetailsService initialized");
+
         return new InMemoryUserDetailsManager(user);
     }
 
     @Bean
     PasswordEncoder passwordEncoder() {
+
+        log.info("PasswordEncoder -> BCryptPasswordEncoder initialized");
+
         return new BCryptPasswordEncoder();
     }
 }

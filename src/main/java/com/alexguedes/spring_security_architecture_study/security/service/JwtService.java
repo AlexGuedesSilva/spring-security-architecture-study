@@ -1,12 +1,13 @@
-package com.alexguedes.spring_security_architecture_study.security.jwt;
+package com.alexguedes.spring_security_architecture_study.security.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+@Service
 public class JwtService {
 
     private final String SECRET = "my-sercret-key-my-sercret-value";

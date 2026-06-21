@@ -1,4 +1,4 @@
-package com.alexguedes.spring_security_architecture_study.security.jwt;
+package com.alexguedes.spring_security_architecture_study.security.provider;
 
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
