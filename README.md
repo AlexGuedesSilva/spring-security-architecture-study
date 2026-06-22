@@ -38,12 +38,16 @@ It demonstrates the evolution from default security configuration to a fully cus
 
 ---
 
-### 4. Custom Authentication Provider
-   * Implementation of AuthenticationProvider
-   * Strategy Pattern in Spring Security:
-      * DaoAuthenticationProvider
-      * JwtAuthenticationProvider
-      * CustomAuthenticationProvider
+### 4. Authentication Providers
+
+Understanding how AuthenticationProvider works internally.
+
+Studied providers:
+
+* DaoAuthenticationProvider
+* JWT Authentication concepts
+
+Current implementation relies on Spring's default DaoAuthenticationProvider.
 
 ---
 
@@ -68,13 +72,13 @@ It demonstrates the evolution from default security configuration to a fully cus
    * Added logs to trace authentication pipeline
    * Visual understanding of Spring Security execution flow:
 
-Request Received
+Request
 ↓
-Security Filter Chain
+SecurityFilterChain
 ↓
 AuthenticationManager
 ↓
-AuthenticationProvider
+DaoAuthenticationProvider
 ↓
 UserDetailsService
 ↓
@@ -82,9 +86,9 @@ PasswordEncoder
 ↓
 Authentication Success
 ↓
-SecurityContextHolder
+JWT Generation
 ↓
-Controller
+Response
 
 ---
 
@@ -111,6 +115,19 @@ SecurityContextHolder
 Controller
 
 ---
+
+## Internal Components Explored
+
+* SecurityFilterChain
+* UsernamePasswordAuthenticationToken
+* AuthenticationManager
+* AuthenticationProvider
+* DaoAuthenticationProvider
+* UserDetailsService
+* PasswordEncoder
+* SecurityContextHolder
+* OncePerRequestFilter
+* JWT Authentication Flow
 
 ## Tecnologias
 
