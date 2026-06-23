@@ -277,3 +277,5 @@ This project helped me understand how Spring Security delegates authentication t
 Alex Guedes
 
 Study project focused on mastering Spring Security architecture and JWT-based authentication flows.
+
+📌 LinkedIn: https://www.linkedin.com/in/alex-guedes-silva/
