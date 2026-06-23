@@ -28,6 +28,24 @@ This diagram shows the complete Spring Security flow from request interception t
 
 This diagram represents the login process using AuthenticationManager and DaoAuthenticationProvider.
 
+---
+
+## 🔑 JWT Authentication Flow
+
+![JWT Flow](docs/diagrams/jwt-authentication-flow.png)
+
+This diagram shows how JWT is generated after successful authentication and later validated by JwtAuthenticationFilter.
+
+---
+
+## 🛡 Security Filter Chain
+
+![Security Filter Chain](docs/diagrams/security-filter-chain.png)
+
+Illustrates how Spring Security processes each request through its filter chain before reaching controllers.
+
+---
+
 ## 🧠 What This Project Covers
 
 ### 1. Spring Security Basics
