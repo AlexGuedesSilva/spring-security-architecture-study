@@ -1,6 +1,6 @@
-package com.alexguedes.spring_security_architecture_study.security.filter;
+package com.alexguedes.spring_security_architecture_study.infraestructure.security.filter;
 
-import com.alexguedes.spring_security_architecture_study.security.service.JwtService;
+import com.alexguedes.spring_security_architecture_study.infraestructure.security.jwt.JwtService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -72,6 +72,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                log.info("Current Principal: {}", authToken.getName());
+                log.info("Current Authorities: {}", authToken.getAuthorities());
 
                 log.info("JWT Filter -> Authentication stored successfully for user: {}", username);
 

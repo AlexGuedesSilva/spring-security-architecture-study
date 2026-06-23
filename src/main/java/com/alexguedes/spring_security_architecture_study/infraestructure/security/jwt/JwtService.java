@@ -1,4 +1,4 @@
-package com.alexguedes.spring_security_architecture_study.security.service;
+package com.alexguedes.spring_security_architecture_study.infraestructure.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

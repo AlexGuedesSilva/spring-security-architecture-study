@@ -1,4 +1,4 @@
-package com.alexguedes.spring_security_architecture_study.dto;
+package com.alexguedes.spring_security_architecture_study.application.dto;
 
 import java.util.List;
 

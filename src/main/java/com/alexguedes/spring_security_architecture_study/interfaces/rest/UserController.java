@@ -1,4 +1,4 @@
-package com.alexguedes.spring_security_architecture_study.controller;
+package com.alexguedes.spring_security_architecture_study.interfaces.rest;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

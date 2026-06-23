@@ -1,12 +1,12 @@
-package com.alexguedes.spring_security_architecture_study.config;
+package com.alexguedes.spring_security_architecture_study.infraestructure.security.config;
 
-import com.alexguedes.spring_security_architecture_study.security.filter.JwtAuthenticationFilter;
+import com.alexguedes.spring_security_architecture_study.infraestructure.security.filter.JwtAuthenticationFilter;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -21,6 +21,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Log4j2
 @Configuration
+@EnableMethodSecurity
 @EnableWebSecurity
 public class SecurityConfig {
 
@@ -35,7 +36,8 @@ public class SecurityConfig {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/public", "/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/controller/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter,
@@ -48,20 +50,6 @@ public class SecurityConfig {
             AuthenticationConfiguration configuration
     ) throws Exception {
         return configuration.getAuthenticationManager();
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-
-        UserDetails user =
-                User.withUsername("alex")
-                        .password(passwordEncoder().encode("123456"))
-                        .roles("USER")
-                        .build();
-
-        log.info("UserDetailsService -> InMemoryUserDetailsService initialized");
-
-        return new InMemoryUserDetailsManager(user);
     }
 
     @Bean

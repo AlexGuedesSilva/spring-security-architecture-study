@@ -14,6 +14,20 @@ It demonstrates the evolution from default security configuration to a fully cus
 
 ---
 
+## 📊 Architecture Overview
+
+![Architecture Overview](docs/diagrams/architecture-overview.png)
+
+This diagram shows the complete Spring Security flow from request interception to authentication and authorization.
+
+---
+
+## 🔐 Authentication Flow
+
+![Authentication Flow](/docs/diagrams/authentication-flow.png)
+
+This diagram represents the login process using AuthenticationManager and DaoAuthenticationProvider.
+
 ## 🧠 What This Project Covers
 
 ### 1. Spring Security Basics
@@ -92,15 +106,25 @@ Response
 
 ---
 
-## 🔐 Authentication Flow (JWT)
+## 🔐 JWT Authentication Flow (Stateless Security)
 
 POST /login
 ↓
+UsernamePasswordAuthenticationToken
+↓
 AuthenticationManager
 ↓
-AuthenticationProvider
+DaoAuthenticationProvider
 ↓
-JWT Generated (JwtService)
+UserDetailsService
+↓
+PasswordEncoder
+↓
+Authentication (authenticated)
+↓
+JWT Generation (JwtService)
+↓
+Response
 ↓
 Client receives token
 
@@ -137,8 +161,7 @@ Controller
 * Maven
 * JUnit 5
 * MockMvc
-* JWT
-* OAuth2 Resource Server
+* JWT (Custom implementation using OncePerRequestFilter)
 
 ---
 
@@ -146,7 +169,7 @@ Controller
 
 ### Security Filter Chain
 
-RResponsible for intercepting all HTTP requests and applying configured security filters.
+Responsible for intercepting all HTTP requests and applying configured security filters.
 
 ### AuthenticationManager
 
@@ -154,7 +177,7 @@ Coordinates the authentication process by delegating to a compatible Authenticat
 
 ### AuthenticationProvider
 
-Performs credential validation.
+Performs authentication logic by validating credentials and returning a fully authenticated Authentication object if successful.
 
 Examples:
 
@@ -173,16 +196,24 @@ Examples:
 * LDAP
 * External API
 
-### SecurityContextHolder
+---
 
-Stores the current authentication for the request.
+## Design Patterns Identified
 
-It allows access to:
+### Strategy Pattern
+AuthenticationProvider
 
-* Authentication user
-* Roles
-* Authorities
-* Claims
+### Chain of Responsibility
+SecurityFilterChain
+
+### Template Method
+OncePerRequestFilter
+
+### Factory Pattern
+AuthenticationManager creation
+
+### Dependency Injection
+Spring IoC Container
 
 ---
 
@@ -206,6 +237,20 @@ It allows access to:
 * SecurityContextHolder stores authentication per request (ThreadLocal)
 * JWT enables stateless authentication
 * Filters are the core mechanism behind request security
+
+---
+
+## 🎯 Purpose of this project
+
+This project intentionally avoids production complexity and focuses on understanding Spring Security internals, filter execution order, and authentication delegation flow.
+
+It is not intended as a production-ready architecture, but as an educational exploration of Spring Security internals.
+
+---
+
+## 🧪 Learning Outcome
+
+This project helped me understand how Spring Security delegates authentication through multiple layers instead of handling it directly, making the framework highly extensible and flexible.
 
 ---
 
