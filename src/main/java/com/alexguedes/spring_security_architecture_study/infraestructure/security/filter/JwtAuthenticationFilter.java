@@ -62,7 +62,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            String token = authHeader.substring(BEARER_PREFIX.length());
+            final String token = authHeader.substring(BEARER_PREFIX.length());
             log.debug("{} Bearer token detected for {} {}", LOG_PREFIX, method, uri);
 
             String username = jwtService.extractUsername(token);
@@ -78,8 +78,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (currentAuthentication != null) {
-                log.debug("{} SecurityContext already contains authentication for principal: {}. JWT validation will be skipped.",
-                        LOG_PREFIX, currentAuthentication.getName());
+                log.debug("{} SecurityContext already contains authentication for principal: {} on request {} {}. JWT validation will be skipped.",
+                        LOG_PREFIX, currentAuthentication.getName(), method, uri);
                 filterChain.doFilter(request, response);
                 return;
             }
