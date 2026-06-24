@@ -1,15 +1,21 @@
 package com.alexguedes.spring_security_architecture_study.infraestructure.security.filter;
 
 import com.alexguedes.spring_security_architecture_study.infraestructure.security.jwt.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,12 +25,17 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final String LOG_PREFIX = "[JWT-FILTER]";
+
     private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            UserDetailsService userDetailsService) {
+            UserDetailsService userDetailsService
+    ) {
         this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
@@ -36,56 +47,92 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        log.info("JWT Filter -> Request intercepted: {}", request.getRequestURI());
+        final String method = request.getMethod();
+        final String uri = request.getRequestURI();
 
-        String authHeader = request.getHeader("Authorization");
-        log.info("JWT Filter -> Authorization header: {}", authHeader);
+        log.debug("{} Request intercepted: {} {}", LOG_PREFIX, method, uri);
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            log.info("JWT Filter -> No Bearer token found, skipping authentication");
+        String authHeader = request.getHeader(AUTHORIZATION_HEADER);
+
+        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
+            log.debug("{} No Bearer token found for {} {}. Request will continue without authentication.",
+                    LOG_PREFIX, method, uri);
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = authHeader.substring(7);
-        log.info("JWT Filter -> Token received ({} chars)", token.length());
+        try {
+            String token = authHeader.substring(BEARER_PREFIX.length());
+            log.debug("{} Bearer token detected for {} {}", LOG_PREFIX, method, uri);
 
-        String username = jwtService.extractUsername(token);
-        log.info("JWT Filter -> Username extracted from token: {}", username);
+            String username = jwtService.extractUsername(token);
+            log.debug("{} Subject extracted from token: {}", LOG_PREFIX, username);
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
-            log.info("JWT Filter -> No existing authentication, validating token");
-
-            UserDetails user = userDetailsService.loadUserByUsername(username);
-            log.info("JWT Filter -> User loaded: {}", user.getUsername());
-
-            if (jwtService.isTokenValid(token, username)) {
-
-                log.info("JWT Filter -> Token valid, setting SecurityContext");
-
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(
-                                user,
-                                null,
-                                user.getAuthorities()
-                        );
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                log.info("Current Principal: {}", authToken.getName());
-                log.info("Current Authorities: {}", authToken.getAuthorities());
-
-                log.info("JWT Filter -> Authentication stored successfully for user: {}", username);
-
-            } else {
-                log.warn("JWT Filter -> Invalid token for user: {}", username);
+            if (username == null) {
+                log.warn("{} Token subject could not be extracted for request {} {}. Request will continue without authentication.",
+                        LOG_PREFIX, method, uri);
+                filterChain.doFilter(request, response);
+                return;
             }
-        } else {
-            log.info("JWT Filter -> Authentication already exists or username is null");
+
+            Authentication currentAuthentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (currentAuthentication != null) {
+                log.debug("{} SecurityContext already contains authentication for principal: {}. JWT validation will be skipped.",
+                        LOG_PREFIX, currentAuthentication.getName());
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            log.debug("{} UserDetails loaded successfully for subject: {}", LOG_PREFIX, userDetails.getUsername());
+
+            if (!jwtService.isTokenValid(token, username)) {
+                log.warn("{} Token validation failed for subject: {} on request {} {}. Request will continue without authentication.",
+                        LOG_PREFIX, username, method, uri);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            UsernamePasswordAuthenticationToken authenticationToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userDetails,
+                            null,
+                            userDetails.getAuthorities()
+                    );
+
+            authenticationToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+
+            log.info("{} SecurityContext populated successfully for subject: {} on request {} {}",
+                    LOG_PREFIX, username, method, uri);
+
+        } catch (SignatureException ex) {
+            log.warn("{} Invalid JWT signature for request {} {}. Request will continue without authentication.",
+                    LOG_PREFIX, method, uri);
+
+        } catch (ExpiredJwtException ex) {
+            log.warn("{} Expired JWT token for request {} {}. Request will continue without authentication.",
+                    LOG_PREFIX, method, uri);
+
+        } catch (MalformedJwtException ex) {
+            log.warn("{} Malformed JWT token for request {} {}. Request will continue without authentication.",
+                    LOG_PREFIX, method, uri);
+
+        } catch (JwtException ex) {
+            log.warn("{} Invalid JWT token for request {} {}. Request will continue without authentication.",
+                    LOG_PREFIX, method, uri);
+            log.debug("{} JWT exception details: {}", LOG_PREFIX, ex.getMessage(), ex);
+
+        } catch (Exception ex) {
+            log.error("{} Unexpected error while processing JWT for request {} {}: {}",
+                    LOG_PREFIX, method, uri, ex.getMessage(), ex);
         }
 
         filterChain.doFilter(request, response);
-
-        log.info("JWT Filter -> Request processing completed");
+        log.debug("{} Request processing completed: {} {}", LOG_PREFIX, method, uri);
     }
 }

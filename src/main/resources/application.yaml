@@ -1,3 +1,7 @@
 spring:
   application:
     name: spring-security-architecture
+
+logging:
+  level:
+    com.alexguedes.spring_security_architecture_study.infraestructure.security: DEBUG
